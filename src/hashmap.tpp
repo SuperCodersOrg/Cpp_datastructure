@@ -5,181 +5,161 @@
 #include "../include/hashmap.h"
 #endif
 
-//Hash node Implementation
-
-template <typename Key, typename Value>
-HashNode<Key, Value>::HashNode(const Key& k, const Value& v)
-    : key(k), value(v), next(nullptr) {}
-
-
 // HashMap Implementation
 template <typename Key, typename Value, typename Hash, typename KeyEqual>
-HashMap<Key, Value, Hash, KeyEqual>::HashMap(int initialCapacity) {
-    if (initialCapacity <= 0) {
-        initialCapacity = 16;
-    }
-    bucketCount = initialCapacity;
-    elementCount = 0;
-    maxLoadFactor = 0.75f;
-    
-    buckets = allocateBuckets(bucketCount);
-}
-
-template <typename Key, typename Value, typename Hash, typename KeyEqual>
-HashMap<Key, Value, Hash, KeyEqual>::~HashMap() {
-    destroyBuckets(buckets, bucketCount);
-    buckets = nullptr;
-}
-
-// Copy Constructor (Rule of Three)
-template <typename Key, typename Value, typename Hash, typename KeyEqual>
-HashMap<Key, Value, Hash, KeyEqual>::HashMap(const HashMap<Key, Value, Hash, KeyEqual>& other) {
-    bucketCount = other.bucketCount;
-    elementCount = 0;
-    maxLoadFactor = other.maxLoadFactor;
-    hashFn = other.hashFn;
-    equalFn = other.equalFn;
-
-    buckets = allocateBuckets(bucketCount);
-
-    try {
-        for (int i = 0; i < other.bucketCount; ++i) {
-            HashNode<Key, Value>* current = other.buckets[i];
-            HashNode<Key, Value>* prev = nullptr;
-            while (current != nullptr) {
-                HashNode<Key, Value>* newNode = createNode(current->key, current->value);
-                
-                if (prev == nullptr) {
-                    buckets[i] = newNode;
-                } else {
-                    prev->next = newNode;
-                }
-                prev = newNode;
-                current = current->next;
-                elementCount++;
-            }
-        }
-    } catch (...) {
-        destroyBuckets(buckets, bucketCount);
-        throw;
-    }
-}
-
-// Copy Assignment Operator (Rule of Three)
-template <typename Key, typename Value, typename Hash, typename KeyEqual>
-HashMap<Key, Value, Hash, KeyEqual>& HashMap<Key, Value, Hash, KeyEqual>::operator=(const HashMap<Key, Value, Hash, KeyEqual>& other) {
-    if (this == &other) {
-        return *this;
-    }
-
-    HashNode<Key, Value>** newBuckets = allocateBuckets(other.bucketCount);
-    int newElementCount = 0;
-
-    try {
-        for (int i = 0; i < other.bucketCount; ++i) {
-            HashNode<Key, Value>* current = other.buckets[i];
-            HashNode<Key, Value>* prev = nullptr;
-            while (current != nullptr) {
-                HashNode<Key, Value>* newNode = createNode(current->key, current->value);
-                
-                if (prev == nullptr) {
-                    newBuckets[i] = newNode;
-                } else {
-                    prev->next = newNode;
-                }
-                prev = newNode;
-                current = current->next;
-                newElementCount++;
-            }
-        }
-    } catch (...) {
-        destroyBuckets(newBuckets, other.bucketCount);
-        throw;
-    }
-
-    destroyBuckets(buckets, bucketCount);
-
-    buckets = newBuckets;
-    bucketCount = other.bucketCount;
-    elementCount = newElementCount;
-    maxLoadFactor = other.maxLoadFactor;
-    hashFn = other.hashFn;
-    equalFn = other.equalFn;
-
-    return *this;
+HashMap<Key, Value, Hash, KeyEqual>::HashMap(int initialCapacity)
+    : bucketCount(initialCapacity <= 0 ? 16 : initialCapacity), elementCount(0),
+      maxLoadFactor(0.75f) {
+  for (int i = 0; i < bucketCount; ++i) {
+    buckets.append(LinkedList<KeyValuePair<Key, Value>>());
+  }
 }
 
 // Private helper to compute bucket index
 template <typename Key, typename Value, typename Hash, typename KeyEqual>
-int HashMap<Key, Value, Hash, KeyEqual>::getBucketIndex(const Key& key) const {
-    return static_cast<int>(hashFn(key) % static_cast<size_t>(bucketCount));
+int HashMap<Key, Value, Hash, KeyEqual>::getBucketIndex(const Key &key) const {
+  return static_cast<int>(hashFn(key) % static_cast<size_t>(bucketCount));
 }
 
-// Private helper to clear all elements from HashMap
+// Private helper to rehash and resize the HashMap buckets array
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+void HashMap<Key, Value, Hash, KeyEqual>::rehash(int newCapacity) {
+  DynamicArray<LinkedList<KeyValuePair<Key, Value>>> newBuckets;
+  for (int i = 0; i < newCapacity; ++i) {
+    newBuckets.append(LinkedList<KeyValuePair<Key, Value>>());
+  }
+
+  int oldCapacity = bucketCount;
+  bucketCount = newCapacity;
+
+  for (int i = 0; i < oldCapacity; ++i) {
+    const LinkedList<KeyValuePair<Key, Value>> &bucket = buckets.get(i);
+    for (int j = 0; j < bucket.size(); ++j) {
+      const KeyValuePair<Key, Value> &pair = bucket.get(j);
+      int newIndex = getBucketIndex(pair.key);
+      newBuckets.get(newIndex).insertFront(pair);
+    }
+  }
+
+  buckets = newBuckets;
+}
+
+// Public insert operation
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+void HashMap<Key, Value, Hash, KeyEqual>::insert(const Key &key,
+                                                 const Value &value) {
+  // Check load factor and resize if necessary
+  if (elementCount + 1 > bucketCount * maxLoadFactor) {
+    rehash(bucketCount * 2);
+  }
+
+  int index = getBucketIndex(key);
+  LinkedList<KeyValuePair<Key, Value>> &bucket = buckets.get(index);
+
+  for (int i = 0; i < bucket.size(); ++i) {
+    KeyValuePair<Key, Value> &pair = bucket.get(i);
+    if (equalFn(pair.key, key)) {
+      pair.value = value;
+      return;
+    }
+  }
+
+  // Key doesn't exist, insert new node at front
+  bucket.insertFront(KeyValuePair<Key, Value>(key, value));
+  elementCount++;
+}
+
+// Public get operation
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+bool HashMap<Key, Value, Hash, KeyEqual>::get(const Key &key,
+                                              Value &value) const {
+  int index = getBucketIndex(key);
+  const LinkedList<KeyValuePair<Key, Value>> &bucket = buckets.get(index);
+  for (int i = 0; i < bucket.size(); ++i) {
+    const KeyValuePair<Key, Value> &pair = bucket.get(i);
+    if (equalFn(pair.key, key)) {
+      value = pair.value;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Public remove operation
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+bool HashMap<Key, Value, Hash, KeyEqual>::remove(const Key &key) {
+  int index = getBucketIndex(key);
+  LinkedList<KeyValuePair<Key, Value>> &bucket = buckets.get(index);
+  for (int i = 0; i < bucket.size(); ++i) {
+    const KeyValuePair<Key, Value> &pair = bucket.get(i);
+    if (equalFn(pair.key, key)) {
+      bucket.deleteAt(i);
+      elementCount--;
+      return true;
+    }
+  }
+  return false;
+}
+
+// Public contains operation
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+bool HashMap<Key, Value, Hash, KeyEqual>::contains(const Key &key) const {
+  int index = getBucketIndex(key);
+  const LinkedList<KeyValuePair<Key, Value>> &bucket = buckets.get(index);
+  for (int i = 0; i < bucket.size(); ++i) {
+    const KeyValuePair<Key, Value> &pair = bucket.get(i);
+    if (equalFn(pair.key, key)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// Public size query
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+int HashMap<Key, Value, Hash, KeyEqual>::size() const {
+  return elementCount;
+}
+
+// Public isEmpty query
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+bool HashMap<Key, Value, Hash, KeyEqual>::isEmpty() const {
+  return elementCount == 0;
+}
+
+// Public loadFactor query
+template <typename Key, typename Value, typename Hash, typename KeyEqual>
+float HashMap<Key, Value, Hash, KeyEqual>::loadFactor() const {
+  if (bucketCount == 0)
+    return 0.0f;
+  return static_cast<float>(elementCount) / bucketCount;
+}
+
+// Private/Public helper to clear all elements from HashMap
 template <typename Key, typename Value, typename Hash, typename KeyEqual>
 void HashMap<Key, Value, Hash, KeyEqual>::clear() {
-  if (buckets == nullptr)
-    return;
   for (int i = 0; i < bucketCount; ++i) {
-    HashNode<Key, Value> *current = buckets[i];
-    while (current != nullptr) {
-      HashNode<Key, Value> *temp = current;
-      current = current->next;
-      destroyNode(temp);
-    }
-    buckets[i] = nullptr;
+    buckets.get(i).clear();
   }
   elementCount = 0;
 }
 
-// Helper function to allocate dynamic memory and construct a HashNode using placement new
+// Public print operation
 template <typename Key, typename Value, typename Hash, typename KeyEqual>
-HashNode<Key, Value>* HashMap<Key, Value, Hash, KeyEqual>::createNode(const Key& k, const Value& v) {
-    HashNode<Key, Value>* newNode = static_cast<HashNode<Key, Value>*>(std::malloc(sizeof(HashNode<Key, Value>)));
-    if (newNode == nullptr) {
-        throw std::bad_alloc();
+void HashMap<Key, Value, Hash, KeyEqual>::print() const {
+  for (int i = 0; i < bucketCount; ++i) {
+    std::cout << "Bucket " << i << ": ";
+    const LinkedList<KeyValuePair<Key, Value>> &bucket = buckets.get(i);
+    for (int j = 0; j < bucket.size(); ++j) {
+      const KeyValuePair<Key, Value> &pair = bucket.get(j);
+      std::cout << "[";
+      details::printValue(std::cout, pair.key);
+      std::cout << ": ";
+      details::printValue(std::cout, pair.value);
+      std::cout << "] -> ";
     }
-    new (newNode) HashNode<Key, Value>(k, v);
-    return newNode;
-}
-
-// Helper function to call destructor and free memory of a HashNode
-template <typename Key, typename Value, typename Hash, typename KeyEqual>
-void HashMap<Key, Value, Hash, KeyEqual>::destroyNode(HashNode<Key, Value>* node) {
-    if (node != nullptr) {
-        node->~HashNode();
-        std::free(node);
-    }
-}
-
-// Helper function to allocate memory for buckets and initialize them to nullptr
-template <typename Key, typename Value, typename Hash, typename KeyEqual>
-HashNode<Key, Value>** HashMap<Key, Value, Hash, KeyEqual>::allocateBuckets(int capacity) {
-    HashNode<Key, Value>** bucketsArray = static_cast<HashNode<Key, Value>**>(std::malloc(capacity * sizeof(HashNode<Key, Value>*)));
-    if (bucketsArray == nullptr) {
-        throw std::bad_alloc();
-    }
-    for (int i = 0; i < capacity; ++i) {
-        bucketsArray[i] = nullptr;
-    }
-    return bucketsArray;
-}
-
-// Helper function to clear and free buckets array
-template <typename Key, typename Value, typename Hash, typename KeyEqual>
-void HashMap<Key, Value, Hash, KeyEqual>::destroyBuckets(HashNode<Key, Value>** bucketsArray, int capacity) {
-    if (bucketsArray == nullptr) {
-        return;
-    }
-    for (int i = 0; i < capacity; ++i) {
-        HashNode<Key, Value>* current = bucketsArray[i];
-        while (current != nullptr) {
-            HashNode<Key, Value>* temp = current;
-            current = current->next;
-            destroyNode(temp);
-        }
-    }
-    std::free(bucketsArray);
+    std::cout << "nullptr" << std::endl;
+  }
 }
 
 #endif // HASHMAP_TPP

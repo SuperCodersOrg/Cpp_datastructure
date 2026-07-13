@@ -4,34 +4,63 @@
 #include <cstdlib>
 #include <iostream>
 #include <new>
+#include <cstring>
+#include <type_traits>
+#include <functional> // for std::hash
+#include "dynamicarray.h"
+#include "linkedlist.h"
 
 // Default Key Equal functor using operator==
 template <typename T> struct DefaultKeyEqual {
   bool operator()(const T &a, const T &b) const { return a == b; }
 };
 
-// Default Hash functor for arithmetic types
+// Default Hash functor using std::hash for maximum generality
 template <typename Key> struct DefaultHash {
-  decltype(sizeof(0)) operator()(const Key &key) const {
-    return static_cast<decltype(sizeof(0))>(key);
+  std::size_t operator()(const Key &key) const {
+    return std::hash<Key>{}(key);
   }
 };
 
-template <typename Key, typename Value> class HashNode {
-public:
+// Streamable helper to check and safely print values/keys to stream in print()
+namespace details {
+template <typename T, typename = void>
+struct is_streamable : std::false_type {};
+
+template <typename T>
+struct is_streamable<T, decltype(void(std::declval<std::ostream &>() << std::declval<const T &>()))>
+    : std::true_type {};
+
+template <typename T>
+typename std::enable_if<is_streamable<T>::value>::type
+printValue(std::ostream &os, const T &val) {
+  os << val;
+}
+
+template <typename T>
+typename std::enable_if<!is_streamable<T>::value>::type
+printValue(std::ostream &os, const T &) {
+  os << "<unstreamable>";
+}
+} // namespace details
+
+template <typename Key, typename Value> struct KeyValuePair {
   Key key;
   Value value;
-  HashNode<Key, Value> *next;
 
-  HashNode(const Key &k, const Value &v);
-  ~HashNode() = default;
+  KeyValuePair() = default;
+  KeyValuePair(const Key &k, const Value &v) : key(k), value(v) {}
+
+  bool operator==(const KeyValuePair &other) const {
+    return key == other.key;
+  }
 };
 
 template <typename Key, typename Value, typename Hash = DefaultHash<Key>,
           typename KeyEqual = DefaultKeyEqual<Key>>
 class HashMap {
 private:
-  HashNode<Key, Value> **buckets;
+  DynamicArray<LinkedList<KeyValuePair<Key, Value>>> buckets;
   int bucketCount;
   int elementCount;
   float maxLoadFactor;
@@ -39,24 +68,27 @@ private:
   KeyEqual equalFn;
 
   int getBucketIndex(const Key &key) const;
-  void clear();
-
-  // Helper functions for memory management
-  HashNode<Key, Value> *createNode(const Key &k, const Value &v);
-  void destroyNode(HashNode<Key, Value> *node);
-  HashNode<Key, Value> **allocateBuckets(int capacity);
-  void destroyBuckets(HashNode<Key, Value> **bucketsArray, int capacity);
+  void rehash(int newCapacity);
 
 public:
-  // Constructors & Destructor
+  // Constructors & Destructor (Rule of Zero / Defaulted Rule of Three)
   HashMap(int initialCapacity = 16);
-  ~HashMap();
+  ~HashMap() = default;
+  HashMap(const HashMap &other) = default;
+  HashMap &operator=(const HashMap &other) = default;
 
-  // Rule of Three
-  HashMap(const HashMap &other);
-  HashMap &operator=(const HashMap &other);
+  // Core Operations
+  void insert(const Key &key, const Value &value);
+  bool get(const Key &key, Value &value) const;
+  bool remove(const Key &key);
+  bool contains(const Key &key) const;
+  int size() const;
+  bool isEmpty() const;
+  float loadFactor() const;
+  void clear();
+  void print() const;
 };
 
-#include "../src/hashmap.tpp"
+#include "../src/hashmap.tpp" 
 
 #endif // HASHMAP_H
