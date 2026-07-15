@@ -33,3 +33,17 @@ TEST(LinkedListDeleteFrontTest, DeleteFrontEmpty) {
   LinkedList<int> list;
   EXPECT_THROW(list.deleteFront(), std::out_of_range);
 }
+
+// Test 4: Delete front repeatedly until list is empty
+TEST(LinkedListDeleteFrontTest, DeleteFrontUntilEmpty) {
+  LinkedList<int> list;
+  list.insertBack(1);
+  list.insertBack(2);
+  list.insertBack(3);
+  
+  list.deleteFront();
+  list.deleteFront();
+  list.deleteFront();
+  EXPECT_TRUE(list.isEmpty());
+  EXPECT_EQ(list.size(), 0);
+}

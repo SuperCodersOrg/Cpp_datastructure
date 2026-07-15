@@ -1,6 +1,7 @@
 #include "include/dynamicarray.h"
 #include "include/hashmap.h"
 #include "include/linkedlist.h"
+#include "include/redislite.h"
 #include <cassert>
 #include <iostream>
 #include <string>
@@ -48,7 +49,13 @@ struct StringHash {
   }
 };
 
-int main() {
+int main(int argc, char *argv[]) {
+  if (argc > 1 && std::string(argv[1]) == "--redis") {
+    RedisLite redis;
+    redis.run();
+    return 0;
+  }
+
   std::cout << "=== DynamicArray Code ===" << std::endl;
   DynamicArray<int> arr;
   arr.append(1);

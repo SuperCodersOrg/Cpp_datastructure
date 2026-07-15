@@ -34,3 +34,17 @@ TEST(LinkedListDeleteBackTest, DeleteBackEmpty) {
   LinkedList<int> list;
   EXPECT_THROW(list.deleteBack(), std::out_of_range);
 }
+
+// Test 4: Delete back repeatedly until list is empty
+TEST(LinkedListDeleteBackTest, DeleteBackUntilEmpty) {
+  LinkedList<int> list;
+  list.insertBack(1);
+  list.insertBack(2);
+  list.insertBack(3);
+  
+  list.deleteBack();
+  list.deleteBack();
+  list.deleteBack();
+  EXPECT_TRUE(list.isEmpty());
+  EXPECT_EQ(list.size(), 0);
+}

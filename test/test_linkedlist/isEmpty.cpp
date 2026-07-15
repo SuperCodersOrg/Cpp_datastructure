@@ -32,3 +32,13 @@ TEST(LinkedListIsEmptyTest, EmptyAfterDeletesClear) {
   list.clear();
   EXPECT_TRUE(list.isEmpty());
 }
+
+// Test 4: Verify isEmpty transitions multiple times
+TEST(LinkedListIsEmptyTest, EmptyStateTransitions) {
+  LinkedList<int> list;
+  EXPECT_TRUE(list.isEmpty());
+  list.insertBack(100);
+  EXPECT_FALSE(list.isEmpty());
+  list.deleteFront();
+  EXPECT_TRUE(list.isEmpty());
+}

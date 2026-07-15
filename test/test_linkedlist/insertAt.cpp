@@ -50,3 +50,13 @@ TEST(LinkedListInsertAtTest, InsertInvalidIndices) {
   list.insertBack(10);
   EXPECT_THROW(list.insertAt(2, 5), std::out_of_range);
 }
+
+// Test 5: Insert at index 1 on a single element list
+TEST(LinkedListInsertAtTest, InsertAtEndSingleElement) {
+  LinkedList<int> list;
+  list.insertBack(10);
+  list.insertAt(1, 20);
+  EXPECT_EQ(list.size(), 2);
+  EXPECT_EQ(list.get(0), 10);
+  EXPECT_EQ(list.get(1), 20);
+}

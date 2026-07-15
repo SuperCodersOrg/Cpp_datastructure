@@ -27,3 +27,11 @@ TEST(LinkedListSetTest, SetInvalid) {
   list.insertBack(10);
   EXPECT_THROW(list.set(1, 5), std::out_of_range);
 }
+
+// Test 3: Set an element to the same value
+TEST(LinkedListSetTest, SetSameValue) {
+  LinkedList<int> list;
+  list.insertBack(42);
+  list.set(0, 42);
+  EXPECT_EQ(list.get(0), 42);
+}

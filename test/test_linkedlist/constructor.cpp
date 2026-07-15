@@ -73,3 +73,12 @@ TEST(LinkedListConstructorTest, ElementCopyTracking) {
   EXPECT_EQ(list2.get(0).value, 5);
   EXPECT_EQ(list2.get(1).value, 10);
 }
+
+// Test 6: Copy constructor on single element list
+TEST(LinkedListConstructorTest, CopySingleElementList) {
+  LinkedList<int> list1;
+  list1.insertBack(42);
+  LinkedList<int> list2(list1);
+  EXPECT_EQ(list2.size(), 1);
+  EXPECT_EQ(list2.get(0), 42);
+}

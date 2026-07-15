@@ -61,3 +61,12 @@ TEST(LinkedListDestructorTest, DeletionDestroysRemovedElement) {
   list.deleteAt(0); // deletes 2
   EXPECT_EQ(TestObject::destroyed, 1);
 }
+
+// Test 4: Destructing an empty list does not cause errors or leaks
+TEST(LinkedListDestructorTest, DestructEmptyList) {
+  TestObject::destroyed = 0;
+  {
+    LinkedList<TestObject> list;
+  }
+  EXPECT_EQ(TestObject::destroyed, 0);
+}

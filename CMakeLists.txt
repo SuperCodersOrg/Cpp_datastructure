@@ -8,8 +8,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include_directories(include)
 
 # Main executable
-add_executable(datastruct_runner
+add_executable(simple
     main.cpp
+    
 )
 
 
@@ -46,6 +47,20 @@ add_executable(runTests
     test/test_linkedlist/size.cpp
     test/test_linkedlist/isEmpty.cpp
     test/test_linkedlist/clear.cpp
+    test/test_hashmap/constructor.cpp
+    test/test_hashmap/assignment.cpp
+    test/test_hashmap/insert.cpp
+    test/test_hashmap/get.cpp
+    test/test_hashmap/remove.cpp
+    test/test_hashmap/clear.cpp
+    test/test_hashmap/print.cpp
+    test/test_redislite/tokenize.cpp
+    test/test_redislite/set.cpp
+    test/test_redislite/get.cpp
+    test/test_redislite/del.cpp
+    test/test_redislite/exists.cpp
+    test/test_redislite/clear.cpp
+    test/test_redislite/count.cpp
 )
 
 target_include_directories(runTests PRIVATE include)

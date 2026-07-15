@@ -40,3 +40,12 @@ TEST(LinkedListSizeTest, SizeClear) {
   list.clear();
   EXPECT_EQ(list.size(), 0);
 }
+
+// Test 4: Size of a large list
+TEST(LinkedListSizeTest, SizeOfLargeList) {
+  LinkedList<int> list;
+  for (int i = 0; i < 50; ++i) {
+    list.insertBack(i);
+  }
+  EXPECT_EQ(list.size(), 50);
+}

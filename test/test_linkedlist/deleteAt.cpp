@@ -50,3 +50,12 @@ TEST(LinkedListDeleteAtTest, DeleteAtInvalidIndices) {
   list.insertBack(10);
   EXPECT_THROW(list.deleteAt(1), std::out_of_range);
 }
+
+// Test 5: Delete at index 0 on a single element list
+TEST(LinkedListDeleteAtTest, DeleteAtSingleElement) {
+  LinkedList<int> list;
+  list.insertBack(42);
+  list.deleteAt(0);
+  EXPECT_TRUE(list.isEmpty());
+  EXPECT_EQ(list.size(), 0);
+}

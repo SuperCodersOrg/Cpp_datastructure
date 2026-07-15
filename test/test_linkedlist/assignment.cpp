@@ -112,3 +112,12 @@ TEST(LinkedListAssignmentTest, DestructionOnAssignment) {
   EXPECT_EQ(list2.size(), 1);
   EXPECT_EQ(DestructTracker::destructCount, 2);
 }
+
+// Test 8: Self assignment on an empty list
+TEST(LinkedListAssignmentTest, AssignToSelfEmpty) {
+  LinkedList<int> list;
+  LinkedList<int> &self = list;
+  list = self;
+  EXPECT_TRUE(list.isEmpty());
+  EXPECT_EQ(list.size(), 0);
+}

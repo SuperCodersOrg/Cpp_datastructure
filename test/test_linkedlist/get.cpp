@@ -43,3 +43,26 @@ TEST(LinkedListGetTest, GetInvalid) {
   EXPECT_THROW(constList.get(-1), std::out_of_range);
   EXPECT_THROW(constList.get(1), std::out_of_range);
 }
+
+// Test 5: Beginner test case for standard index-based loop iteration
+TEST(LinkedListGetTest, BasicLoopIteration) {
+  LinkedList<int> list;
+  list.insertBack(10);
+  list.insertBack(20);
+  list.insertBack(30);
+
+  int expectedValue = 10;
+  for (int i = 0; i < list.size(); ++i) {
+    EXPECT_EQ(list.get(i), expectedValue);
+    expectedValue += 10;
+  }
+}
+
+// Test 6: Get index zero on a single element list
+TEST(LinkedListGetTest, GetSingleElementRange) {
+  LinkedList<int> list;
+  list.insertBack(42);
+  EXPECT_EQ(list.get(0), 42);
+  EXPECT_THROW(list.get(1), std::out_of_range);
+}
+

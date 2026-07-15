@@ -44,3 +44,14 @@ TEST(LinkedListClearTest, AppendAfterClear) {
   EXPECT_EQ(list.get(0), 5);
   EXPECT_EQ(list.get(1), 10);
 }
+
+// Test 5: Clear a large list
+TEST(LinkedListClearTest, ClearLargeList) {
+  LinkedList<int> list;
+  for (int i = 0; i < 100; ++i) {
+    list.insertBack(i);
+  }
+  list.clear();
+  EXPECT_TRUE(list.isEmpty());
+  EXPECT_EQ(list.size(), 0);
+}

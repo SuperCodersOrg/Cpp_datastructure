@@ -1,5 +1,6 @@
 #include "linkedlist.h"
 #include <gtest/gtest.h>
+#include <string>
 
 // Test 1: Search in empty list
 TEST(LinkedListSearchTest, SearchEmpty) {
@@ -28,3 +29,26 @@ TEST(LinkedListSearchTest, SearchMissing) {
   EXPECT_FALSE(list.search(15));
   EXPECT_FALSE(list.search(40));
 }
+
+// Test 4: Beginner test case for searching string values
+TEST(LinkedListSearchTest, SearchStringValues) {
+  LinkedList<std::string> list;
+  list.insertBack("Apple");
+  list.insertBack("Banana");
+
+  EXPECT_TRUE(list.search("Apple"));
+  EXPECT_TRUE(list.search("Banana"));
+  EXPECT_FALSE(list.search("Cherry"));
+}
+
+// Test 5: Search for elements when duplicate values exist
+TEST(LinkedListSearchTest, SearchDuplicateValues) {
+  LinkedList<int> list;
+  list.insertBack(10);
+  list.insertBack(20);
+  list.insertBack(10);
+  EXPECT_TRUE(list.search(10));
+  EXPECT_TRUE(list.search(20));
+  EXPECT_FALSE(list.search(30));
+}
+
