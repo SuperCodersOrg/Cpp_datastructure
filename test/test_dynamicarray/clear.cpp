@@ -39,3 +39,33 @@ TEST(DynamicArrayClearTest, AppendAfterClear) {
   EXPECT_EQ(arr.size(), 1);
   EXPECT_EQ(arr.get(0), 30);
 }
+
+// Test 4: Clear multiple times successively is idempotent and safe
+TEST(DynamicArrayClearTest, ClearMultipleTimes) {
+  DynamicArray<int> arr;
+  arr.append(1);
+  arr.append(2);
+
+  arr.clear();
+  EXPECT_EQ(arr.size(), 0);
+
+  // Successive clears
+  EXPECT_NO_THROW(arr.clear());
+  EXPECT_NO_THROW(arr.clear());
+  EXPECT_EQ(arr.size(), 0);
+}
+
+// Test 5: Verify capacity is preserved on clear
+TEST(DynamicArrayClearTest, ClearPreservesCapacity) {
+  DynamicArray<int> arr;
+  for (int i = 0; i < 50; ++i) {
+    arr.append(i);
+  }
+  
+  int capacityBeforeClear = arr.capacity();
+  EXPECT_GE(capacityBeforeClear, 50);
+
+  arr.clear();
+  EXPECT_EQ(arr.size(), 0);
+  EXPECT_EQ(arr.capacity(), capacityBeforeClear);
+}

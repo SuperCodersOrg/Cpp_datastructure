@@ -79,3 +79,28 @@ TEST(DynamicArrayInsertTest, InsertInvalidIndex) {
   DynamicArray<int> emptyArr;
   EXPECT_THROW(emptyArr.insert(1, 50), std::out_of_range);
 }
+
+// Test 7: Insert at end behaves like append
+TEST(DynamicArrayInsertTest, InsertAtEndBehavesLikeAppend) {
+  DynamicArray<int> arr;
+  arr.append(1);
+  arr.append(2);
+
+  // insert at index equal to size (2)
+  arr.insert(2, 3);
+  EXPECT_EQ(arr.size(), 3);
+  EXPECT_EQ(arr.get(2), 3);
+}
+
+// Test 8: Repeated insert at front
+TEST(DynamicArrayInsertTest, RepeatedInsertAtFront) {
+  DynamicArray<int> arr;
+  arr.insert(0, 30);
+  arr.insert(0, 20);
+  arr.insert(0, 10);
+
+  EXPECT_EQ(arr.size(), 3);
+  EXPECT_EQ(arr.get(0), 10);
+  EXPECT_EQ(arr.get(1), 20);
+  EXPECT_EQ(arr.get(2), 30);
+}

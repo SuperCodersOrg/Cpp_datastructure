@@ -20,15 +20,17 @@ find_package(GTest REQUIRED)
 
 add_executable(runTests
     test/test_main.cpp
-    test/test_dynamicarray/dynamicarray_constructor.cpp
-    test/test_dynamicarray/dynamicarray_assignment.cpp
-    test/test_dynamicarray/dynamicarray_append.cpp
-    test/test_dynamicarray/dynamicarray_remove.cpp
-    test/test_dynamicarray/dynamicarray_insert.cpp
-    test/test_dynamicarray/dynamicarray_get.cpp
-    test/test_dynamicarray/dynamicarray_info.cpp
-    test/test_dynamicarray/dynamicarray_clear.cpp
-    test/test_dynamicarray/dynamicarray_destructor.cpp
+    test/test_dynamicarray/constructor.cpp
+    test/test_dynamicarray/assignment.cpp
+    test/test_dynamicarray/append.cpp
+    test/test_dynamicarray/remove.cpp
+    test/test_dynamicarray/insert.cpp
+    test/test_dynamicarray/get.cpp
+    test/test_dynamicarray/size.cpp
+    test/test_dynamicarray/capacity.cpp
+    test/test_dynamicarray/isEmpty.cpp
+    test/test_dynamicarray/clear.cpp
+    test/test_dynamicarray/destructor.cpp
 )
 
 target_include_directories(runTests PRIVATE include)

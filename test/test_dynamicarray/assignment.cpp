@@ -77,3 +77,54 @@ TEST(DynamicArrayAssignmentTest, DeepCopy) {
   EXPECT_EQ(arr1.get(0), 5);
   EXPECT_EQ(arr2.get(0), 10);
 }
+
+// Test 6: Chained assignment (arr3 = arr2 = arr1)
+TEST(DynamicArrayAssignmentTest, ChainedAssignment) {
+  DynamicArray<int> arr1;
+  arr1.append(42);
+  arr1.append(84);
+
+  DynamicArray<int> arr2;
+  DynamicArray<int> arr3;
+
+  arr3 = arr2 = arr1;
+
+  EXPECT_EQ(arr1.size(), 2);
+  EXPECT_EQ(arr2.size(), 2);
+  EXPECT_EQ(arr3.size(), 2);
+
+  EXPECT_EQ(arr3.get(0), 42);
+  EXPECT_EQ(arr3.get(1), 84);
+}
+
+// Helper struct to track destructors during assignment
+struct DestructTracker {
+  static int destructCount;
+  int value;
+  DestructTracker(int val) : value(val) {}
+  ~DestructTracker() {
+    destructCount++;
+  }
+};
+int DestructTracker::destructCount = 0;
+
+// Test 7: Assigning to an array with elements ensures proper destructor calls for overwritten elements
+TEST(DynamicArrayAssignmentTest, AssignmentDestruction) {
+  DynamicArray<DestructTracker> arr1;
+  arr1.append(DestructTracker(100));
+
+  DynamicArray<DestructTracker> arr2;
+  arr2.append(DestructTracker(1));
+  arr2.append(DestructTracker(2));
+
+  // Reset destruct count before assignment
+  DestructTracker::destructCount = 0;
+
+  // arr2 has size 2, arr1 has size 1
+  arr2 = arr1;
+
+  // The 2 elements originally in arr2 should be destroyed
+  EXPECT_EQ(arr2.size(), 1);
+  EXPECT_EQ(arr2.get(0).value, 100);
+  EXPECT_EQ(DestructTracker::destructCount, 2);
+}

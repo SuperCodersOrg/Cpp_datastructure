@@ -69,3 +69,34 @@ TEST(DynamicArrayRemoveTest, RemoveInvalidIndex) {
   DynamicArray<int> emptyArr;
   EXPECT_THROW(emptyArr.remove(0), std::out_of_range);
 }
+
+// Test 6: Remove repeatedly until empty
+TEST(DynamicArrayRemoveTest, RemoveRepeatedlyUntilEmpty) {
+  DynamicArray<int> arr;
+  arr.append(1);
+  arr.append(2);
+  arr.append(3);
+
+  arr.remove(1); // removes 2, remaining: 1, 3
+  arr.remove(1); // removes 3, remaining: 1
+  arr.remove(0); // removes 1, remaining: empty
+
+  EXPECT_EQ(arr.size(), 0);
+  EXPECT_TRUE(arr.isEmpty());
+}
+
+// Test 7: Append after removing all elements
+TEST(DynamicArrayRemoveTest, AppendAfterRemoveAll) {
+  DynamicArray<int> arr;
+  arr.append(5);
+  arr.append(6);
+
+  arr.remove(0);
+  arr.remove(0);
+
+  EXPECT_TRUE(arr.isEmpty());
+
+  arr.append(10);
+  EXPECT_EQ(arr.size(), 1);
+  EXPECT_EQ(arr.get(0), 10);
+}
